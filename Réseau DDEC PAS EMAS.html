@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PAS EMAS - Annuaire DDEC</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-main: #2c3e50;
+            --text-muted: #7f8c8d;
+            --primary: #1e3c72;
+            --ecole-color: #9b59b6;
+            --college-color: #f1c40f;
+            --lycee-color: #2ecc71;
+            --pink-color: #fd79a8;
+            --shadow: 0 4px 6px rgba(0,0,0,0.05);
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px;
+            font-size: 16px;
+        }
+
+        header {
+            max-width: 1250px;
+            margin: 0 auto 20px auto;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            padding: 25px 30px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        header h1 { font-size: 26px; }
+        header p { font-size: 15px; opacity: 0.9; }
+
+        .sector-tabs {
+            max-width: 1250px;
+            margin: 0 auto 20px auto;
+            display: flex;
+            gap: 10px;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 15px 20px;
+            font-size: 17px;
+            font-weight: bold;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            background-color: #e2e8f0;
+            color: #4a5568;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            position: relative;
+        }
+
+        .tab-button.active {
+            background: #ffffff;
+            color: #1e3c72;
+            border-bottom: 4px solid #1e3c72;
+            transform: translateY(-2px);
+        }
+
+        .tab-subtitle { font-size: 13px; font-weight: normal; opacity: 0.8; }
+
+        .tab-badge {
+            color: var(--pink-color);
+            font-size: 13px;
+            font-weight: bold;
+            margin-top: 2px;
+            display: inline-block;
+        }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            max-width: 1250px;
+            margin: 0 auto 25px auto;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            padding: 18px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            text-align: center;
+            border-bottom: 4px solid var(--primary);
+        }
+        .stat-card.ecoles { border-color: var(--ecole-color); }
+        .stat-card.colleges { border-color: var(--college-color); }
+        .stat-card.lycees { border-color: var(--lycee-color); }
+        .stat-card.saisines-totales { border-color: var(--pink-color); background: #fff5f8; }
+        .stat-number { font-size: 24px; font-weight: bold; margin-bottom: 4px; }
+        .stat-label { font-size: 13px; color: var(--text-muted); text-transform: uppercase; font-weight: 600; }
+
+        .controls {
+            max-width: 1250px;
+            margin: 0 auto 25px auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .search-box { flex: 2; min-width: 250px; }
+        .search-box input {
+            width: 100%; padding: 12px 15px; border: 1px solid #dcdde1; border-radius: 8px; font-size: 15px; outline: none;
+        }
+
+        .select-commune {
+            flex: 1; min-width: 180px; padding: 12px; border: 1px solid #dcdde1; border-radius: 8px; font-size: 15px; outline: none; background: #fff;
+        }
+
+        .filter-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+        .btn-filter {
+            padding: 10px 16px; border: none; background: #f1f2f6; border-radius: 20px; cursor: pointer; font-size: 14px; font-weight: 600;
+        }
+        .btn-filter.active { background: var(--primary); color: white; }
+        .btn-filter.active[data-type="École"] { background-color: var(--ecole-color); color: white; }
+        .btn-filter.active[data-type="Collège"] { background-color: var(--college-color); color: #2c3e50; }
+        .btn-filter.active[data-type="Lycée"] { background-color: var(--lycee-color); color: white; }
+        
+        .btn-urgences { background: #fdf5e6; color: #cd853f; border: 1px solid #cd853f; }
+        .btn-urgences.active { background: #cd853f !important; color: white !important; }
+
+        .grid-container {
+            max-width: 1250px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 20px;
+        }
+
+        /* Conteneur 3D pour l'effet Flip */
+        .card-scene {
+            perspective: 1000px;
+            height: 320px;
+        }
+
+        .card-element {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s ease;
+        }
+
+        .card-element.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-left: 6px solid var(--primary);
+        }
+
+        .card-face.verso {
+            transform: rotateY(180deg);
+            background: #ffffff;
+            overflow-y: auto;
+        }
+
+        .ecole .card-face { border-left-color: var(--ecole-color); }
+        .college .card-face { border-left-color: var(--college-color); }
+        .lycee .card-face { border-left-color: var(--lycee-color); }
+
+        .badge-type {
+            font-size: 11px; text-transform: uppercase; font-weight: bold;
+            padding: 5px 10px; border-radius: 4px; color: white; display: inline-block; margin-bottom: 8px;
+        }
+        .ecole .badge-type { background: var(--ecole-color); }
+        .college .badge-type { background: var(--college-color); color: #2c3e50; }
+        .lycee .badge-type { background: var(--lycee-color); }
+
+        .badge-saisines {
+            font-size: 12px; font-weight: bold; padding: 5px 14px; border-radius: 20px;
+            color: white; display: inline-block; margin-bottom: 8px; float: right;
+        }
+        .ecole .badge-saisines { background: var(--ecole-color); }
+        .college .badge-saisines { background: var(--college-color); color: #2c3e50; }
+        .lycee .badge-saisines { background: var(--lycee-color); }
+
+        .establishment-name { font-size: 17px; font-weight: bold; color: #2c3e50; display: inline-block; }
+        
+        /* Bouton Info "i" discret en haut à droite */
+        .btn-flip-info {
+            float: right;
+            background: #f1f2f6;
+            border: 1px solid #cbd5e0;
+            color: #1e3c72;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+        .btn-flip-info:hover { background: #e2e8f0; }
+
+        .commune { font-size: 13px; color: var(--text-muted); margin-top: 3px; }
+        .info-row { display: flex; margin-bottom: 6px; font-size: 14px; align-items: center; justify-content: space-between; }
+        .info-left { display: flex; align-items: center; gap: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .info-label { width: 35px; color: var(--text-muted); font-weight: 500; flex-shrink: 0; }
+        
+        .middle-section {
+            border-top: 1px solid #edf2f7;
+            padding-top: 8px;
+            margin-top: 4px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .effectif-row {
+            font-size: 13px; font-weight: bold; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .counters-row {
+            display: flex;
+            gap: 10px;
+            background: #f8fafc;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #e2e8f0;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .counter-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #4a5568;
+        }
+        .counter-group input {
+            width: 45px;
+            padding: 3px 6px;
+            text-align: center;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: bold;
+            outline: none;
+            background: white;
+        }
+        .counter-group input:focus {
+            border-color: #1e3c72;
+            box-shadow: 0 0 0 2px rgba(30,60,114,0.1);
+        }
+
+        .card-actions { display: flex; margin-top: 4px; }
+        
+        .btn-partenaires-card {
+            width: 100%;
+            background: #ffffff; 
+            color: #1e3c72; 
+            border: 1px solid #cbd5e0;
+            padding: 9px 12px;
+            font-size: 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s ease;
+        }
+        .btn-partenaires-card:hover { background: #f1f2f6; }
+
+        .btn-mail {
+            background: #f8fafc; border: 1px solid #cbd5e0; padding: 4px 8px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; color: #1e3c72; display: inline-flex; align-items: center; gap: 4px; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex-shrink: 0; transition: all 0.2s;
+        }
+        .btn-mail:hover { background: #e2e8f0; border-color: #a0aec0; }
+
+        /* Styles du Verso (Infos Pratiques) */
+        .verso-title { font-size: 16px; font-weight: bold; color: var(--primary); display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #edf2f7; padding-bottom: 6px; margin-bottom: 10px; }
+        .verso-content { display: flex; flex-direction: column; gap: 7px; font-size: 13px; color: #4a5568; }
+        .verso-row { display: flex; gap: 8px; align-items: flex-start; }
+        .verso-label { font-weight: 600; color: var(--text-muted); min-width: 80px; flex-shrink: 0; }
+        .verso-value a { color: #2563eb; text-decoration: none; }
+        .verso-value a:hover { text-decoration: underline; }
+
+        /* Fenêtre Modale (Partenaires DDEC) */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5); display: none; justify-content: center; align-items: center; z-index: 1000;
+        }
+        .modal-container {
+            background: white; width: 1100px; max-width: 98%; height: 700px; max-height: 92vh;
+            border-radius: var(--radius); box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; overflow: hidden;
+            animation: modalPop 0.3s ease;
+        }
+        @keyframes modalPop {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        .modal-header {
+            background: #1e3c72; color: white; padding: 20px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .modal-header h2 { font-size: 20px; }
+        .modal-close { background: none; border: none; color: white; font-size: 24px; cursor: pointer; }
+        
+        .modal-body { padding: 25px; flex: 1; overflow-y: auto; background: #fafbfc; }
+
+        .partners-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            border: 1px solid #e2e8f0;
+        }
+        .partners-table th, .partners-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #edf2f7;
+            font-size: 14px;
+        }
+        .partners-table th {
+            background-color: #f8fafc;
+            color: #4a5568;
+            font-weight: 600;
+        }
+        .partners-table input {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            background: #fff;
+        }
+        .partners-table input:focus {
+            border-color: #1e3c72;
+            box-shadow: 0 0 0 2px rgba(30,60,114,0.1);
+        }
+        .btn-copy-partenaire {
+            background: #f1f2f6;
+            border: 1px solid #cbd5e0;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            color: #1e3c72;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-copy-partenaire:hover { background: #e2e8f0; }
+
+        .no-result { grid-column: 1 / -1; text-align: center; padding: 40px; color: var(--text-muted); font-size: 16px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>PAS EMAS</h1>
+        <p>Annuaire des établissements du réseau DDEC</p>
+    </header>
+
+    <div class="sector-tabs">
+        <button class="tab-button active" onclick="switchSector('guerande-baule')" id="tab-gb">
+            Guérande Atlantique
+            <span class="tab-subtitle" id="sub-gb">-- Établissements | -- Élèves</span>
+            <span class="tab-badge" id="badge-gb">0</span>
+        </button>
+        <button class="tab-button" onclick="switchSector('saint-nazaire-ouest')" id="tab-sno">
+            Saint Nazaire Ouest
+            <span class="tab-subtitle" id="sub-sno">-- Établissements | -- Élèves</span>
+            <span class="tab-badge" id="badge-sno">0</span>
+        </button>
+        <button class="tab-button" onclick="switchSector('saint-nazaire-est')" id="tab-sne">
+            Saint Nazaire Est
+            <span class="tab-subtitle" id="sub-sne">-- Établissements | -- Élèves</span>
+            <span class="tab-badge" id="badge-sne">0</span>
+        </button>
+    </div>
+
+    <div class="stats-bar">
+        <div class="stat-card"><div class="stat-number" id="stat-total">0</div><div class="stat-label">Établissements</div></div>
+        <div class="stat-card ecoles"><div class="stat-number" id="stat-ecoles">0</div><div class="stat-label">Écoles</div></div>
+        <div class="stat-card colleges"><div class="stat-number" id="stat-colleges">0</div><div class="stat-label">Collèges</div></div>
+        <div class="stat-card lycees"><div class="stat-number" id="stat-lycees">0</div><div class="stat-label">Lycées</div></div>
+        <div class="stat-card saisines-totales"><div class="stat-number" id="stat-saisines" style="color: var(--pink-color);">0</div><div class="stat-label" style="color: var(--pink-color); font-weight: bold;">Saisines actives</div></div>
+    </div>
+
+    <div class="controls">
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Rechercher un CE, une commune...">
+        </div>
+        <select id="communeSelect" class="select-commune" onchange="filterCommune()">
+            <option value="all">📍 Toutes les communes</option>
+        </select>
+        <div class="filter-buttons">
+            <button class="btn-filter active" data-filter="all">Tous</button>
+            <button class="btn-filter" data-filter="type" data-type="École">Écoles</button>
+            <button class="btn-filter" data-filter="type" data-type="Collège">Collèges</button>
+            <button class="btn-filter" data-filter="type" data-type="Lycée">Lycées</button>
+            <button class="btn-filter btn-urgences" data-filter="urgences">🚨 Urgences</button>
+        </div>
+    </div>
+
+    <div class="grid-container" id="gridContainer"></div>
+
+    <!-- Fenêtre Modale (Partenaires DDEC) -->
+    <div class="modal-overlay" id="partenairesModal">
+        <div class="modal-container">
+            <div class="modal-header" style="background: #2c3e50;">
+                <div>
+                    <h2 id="partenairesModalTitle">Nom de l'établissement</h2>
+                    <p id="partenairesModalSubtitle" style="font-size: 13px; opacity: 0.8; margin-top: 3px;">Commune — Partenaires DDEC</p>
+                </div>
+                <button class="modal-close" onclick="closePartenairesModal()">×</button>
+            </div>
+            <div class="modal-body" id="partenairesModalBody"></div>
+        </div>
+    </div>
+
+    <script>
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz0PLqaxZ83tvfmiCcQmMpvQgags9lZ4L53a9to_zmD1YsVmhgm6H6EYw--DUzQ7VnYkA/exec";
+
+        let cloudData = {};
+        try {
+            const savedLocally = localStorage.getItem('pas_emas_data_v3');
+            if (savedLocally) {
+                cloudData = JSON.parse(savedLocally);
+            }
+        } catch(e) {}
+
+        const isCoordinator = window.location.protocol === "file:" && navigator.userAgent.includes("Chrome");
+
+        async function loadCloudData() {
+            try {
+                let response = await fetch(WEB_APP_URL);
+                if (response.ok) {
+                    let remoteData = await response.json();
+                    if (remoteData && Object.keys(remoteData).length > 0) {
+                        cloudData = { ...remoteData, ...cloudData };
+                    }
+                }
+            } catch (e) {
+                console.log("Utilisation du stockage local de secours.");
+            }
+            populateCommunes(); updateStats(); renderCards();
+        }
+
+        async function saveCloudData(key, value) {
+            if (!isCoordinator) return;
+
+            cloudData[key] = value;
+            try {
+                localStorage.setItem('pas_emas_data_v3', JSON.stringify(cloudData));
+            } catch(e) {}
+
+            try {
+                await fetch(WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ key: key, value: value })
+                });
+            } catch (e) {
+                console.error("Erreur de sauvegarde cloud", e);
+            }
+        }
+
+        function getCloud(key) {
+            return cloudData[key] !== undefined ? cloudData[key] : "";
+        }
+
+        // Fiches de référence globales avec coordonnées
+        const psychologueNoguesInfo = { mail: "lmnogues@ec44.fr", tel: "06 12 02 33 06" };
+        const psychologueBastardInfo = { mail: "nbastard@ec44.fr", tel: "" };
+        const chargeMissionDavidInfo = { mail: "ydavid@ec44.fr", tel: "" };
+        const chargeMissionRuminInfo = { mail: "crumin@ec44.fr", tel: "" };
+        const ershBibardInfo = { mail: "ibibard@ec44.fr", tel: "07 61 72 91 63" };
+        const coordoPialHurterInfo = { mail: "cordop9@ec44.fr", tel: "" };
+        const pilotePialTardivelInfo = { mail: "pilotep9@ec44.fr", tel: "" };
+        const coordoPialNouryInfo = { mail: "coordop10@ec44.fr", tel: "" };
+        const pilotePialEpieInfo = { mail: "pilotep10@ec44.fr", tel: "" };
+        const raPerretteInfo = { mail: "francoise.perrette@es-sag.fr", tel: "" };
+        const accompagnatriceMijecRobinInfo = { mail: "vrobin@ec44.fr", tel: "06 58 79 44 73" };
+
+        function getPartDefaults(type, sector, etabId) {
+            let defaults = {};
+            defaults["ERSH"] = { nom: "BIBARD", prenom: "Isabelle", ...ershBibardInfo };
+
+            if (type === "École") {
+                defaults["Chargé de mission"] = { nom: "DAVID", prenom: "Yoann", ...chargeMissionDavidInfo };
+            } else {
+                defaults["Chargé de mission"] = { nom: "RUMIN", prenom: "Corinne", ...chargeMissionRuminInfo };
+                defaults["Accompagnatrice MIJEC"] = { nom: "ROBIN", prenom: "Viviane", ...accompagnatriceMijecRobinInfo };
+            }
+
+            if (["gb-2", "gb-5", "gb-6", "gb-7", "gb-13"].includes(etabId)) {
+                defaults["RA"] = { nom: "PERETTE", prenom: "Françoise", ...raPerretteInfo };
+            }
+
+            let hasPialHurter = false;
+            let hasPialNoury = false;
+
+            if (sector === "guerande-baule" && etabId !== "gb-16" && etabId !== "gb-17" && etabId !== "gb-18") {
+                hasPialHurter = true;
+            } else if (sector === "saint-nazaire-ouest" && ["sno-1", "sno-2", "sno-3"].includes(etabId)) {
+                hasPialHurter = true;
+            } else if (sector === "saint-nazaire-est" && etabId === "sne-1") {
+                hasPialHurter = true;
+            }
+
+            if (sector === "saint-nazaire-ouest" && etabId !== "sno-1" && etabId !== "sno-2" && etabId !== "sno-3") {
+                hasPialNoury = true;
+            } else if (sector === "saint-nazaire-est" && etabId !== "sne-1") {
+                hasPialNoury = true;
+            } else if (sector === "guerande-baule" && (etabId === "gb-16" || etabId === "gb-17" || etabId === "gb-18")) {
+                hasPialNoury = true;
+            }
+
+            if (hasPialHurter) {
+                defaults["Coordo PIAL"] = { nom: "HURTER-DELAUNAY", prenom: "Irvine", ...coordoPialHurterInfo };
+                defaults["Pilote PIAL"] = { nom: "TARDIVEL", prenom: "Olivier", ...pilotePialTardivelInfo };
+            } else if (hasPialNoury) {
+                defaults["Coordo PIAL"] = { nom: "NOURY-BOUCARD", prenom: "Christine", ...coordoPialNouryInfo };
+                defaults["Pilote PIAL"] = { nom: "EPIE", prenom: "Myriam", ...pilotePialEpieInfo };
+            }
+
+            return defaults;
+        }
+
+        const dataset = {
+            "guerande-baule": [
+                { 
+                    id: "gb-1", mail: "vamice@ec44.fr", commune: "Assérac", type: "École", nom: "Sainte Anne", ce: "Mme Véronique AMICE", effectif: 110, spec: "5 cl. (2M/3E)", 
+                    adresse: "26 Rue du Calvaire, 44410 Assérac", tel: "02 53 30 13 94", 
+                    horaires: "Maternelle : 8h45 – 11h45 et 13h15 – 16h30<br>Élémentaire : 8h45 – 12h15 et 13h45 – 16h30", 
+                    decharge: "Lundi", 
+                    partCustom: { RA: {nom: "DERIANO", prenom: "Sandrine"}, Psychologue: {nom: "NOGUES", prenom: "Lise-Marie", ...psychologueNoguesInfo} } 
+                },
+                { 
+                    id: "gb-2", mail: "lbricaud@ec44.fr", commune: "Batz-sur-Mer", type: "École", nom: "Sainte Marie - St Pierre", ce: "Mme Laurence BRICAUD", effectif: 64, spec: "3 cl. (1M/2E)", 
+                    adresse: "2 Rue de Trémondais, 44740 Batz-sur-Mer", tel: "02 40 23 92 16", 
+                    horaires: "Accueil matin : 8h35 à 8h45<br>Matinée : 8h45 – 12h00<br>Après-midi : 13h45 – 16h45 (sieste dès 13h15)", 
+                    decharge: "Mardi", 
+                    partCustom: { Psychologue: {nom: "BASTARD", prenom: "Nathalie", ...psychologueBastardInfo} } 
+                },
+                { 
+                    id: "gb-3", mail: "aparbeau@ec44.fr", commune: "La Baule-Escoublac", type: "École", nom: "Le Sacré-Cœur", ce: "Mme Aude PARBEAU", effectif: 207, spec: "8 cl. (3M/5E)", 
+                    adresse: "19 Avenue Jean Sohier, 44500 La Baule-Escoublac", tel: "02 40 24 02 70", 
+                    horaires: "Matin : 8h45 – 12h00 (portail dès 8h35)<br>Après-midi : 13h30 – 16h30 (portail dès 13h20)<br><strong>Garderie :</strong> 7h45–8h35 et 16h30–18h45", 
+                    decharge: "", 
+                    partCustom: { RA: {nom: "BRILLA", prenom: "Djamila"}, Psychologue: {nom: "BASTARD", prenom: "Nathalie", ...psychologueBastardInfo} } 
+                },
+                { 
+                    id: "gb-4", mail: "scuny@ec44.fr", commune: "La Baule-Escoublac", type: "École", nom: "St Joseph", ce: "Mme Sophie CUNY", effectif: 199, spec: "8 cl. (3M/5E)", 
+                    adresse: "1 Avenue Lenormand, 44500 La Baule-Escoublac (proche gare TGV)", tel: "02 40 60 05 40", 
+                    horaires: "Cours : 8h45 – 12h00 et 13h30 – 16h30<br>Portails : 8h35–8h45, 12h00–12h10, 13h20–13h30, 16h30–16h40", 
+                    decharge: "", 
+                    partCustom: { RA: {nom: "NASSIF", prenom: "Catherine"}, Psychologue: {nom: "NOGUES", prenom: "Lise-Marie", ...psychologueNoguesInfo} } 
+                },
+                { 
+                    id: "gb-5", mail: "lbricaud@ec44.fr", commune: "Le Croisic", type: "École", nom: "St Goustan", ce: "Mme Laurence BRICAUD", effectif: 31, spec: "2 cl. (1M/1E)", 
+                    adresse: "2 Rue Jean Gouzo, 44490 Le Croisic", tel: "02 40 23 06 39", 
+                    horaires: "Matin : 9h00 – 11h50 (Soutien 8h20–8h50 mardis/jeudis)<br>Après-midi : 13h15 – 16h30", 
+                    decharge: "Mardi", 
+                    partCustom: { Psychologue: {nom: "BASTARD", prenom: "Nathalie", ...psychologueBastardInfo} } 
+                },
+                { 
+                    id: "gb-6", mail: "otardivel@ec44.fr", commune: "Guérande", type: "École", nom: "St Aubin - La Mennais", ce: "M. Olivier TARDIVEL", effectif: 337, spec: "13 cl. (4M/9E)", 
+                    adresse: "12 Avenue Gustave Flaubert, 44350 Guérande", tel: "02 40 24 77 80", 
+                    horaires: "Cours : 8h45 – 12h00 et 13h30 – 16h30<br>Portails : 8h30 (matin), 13h15 (après-midi)<br><strong>Garderie :</strong> 7h00–8h30 et 16h30–19h00", 
+                    decharge: "Décharge totale (plein temps)", 
+                    partCustom: { Psychologue: {nom: "NOGUES", prenom: "Lise-Marie", ...psychologueNoguesInfo} } 
+                },
+                { 
+                    id: "gb-7", mail: "otardivel@ec44.fr", commune: "Guérande", type: "École", nom: "Sainte Marie", ce: "M. Olivier TARDIVEL", effectif: 246, spec: "10 cl. (3M/7E) + ULIS", 
+                    adresse: "Rue de Bizienne (3 Pl. Chapelle Notre-Dame La Blanche), 44350 Guérande", tel: "02 40 24 91 48", 
+                    horaires: "Maternelle : 8h30–11h45 / 13h30–16h30<br>Élémentaire : 8h30–12h00 / 13h45–16h30<br>Accueil classes : dès 8h20 et 13h20<br><strong>Garderie :</strong> 7h00–19h00 (municipale)", 
+                    decharge: "Décharge totale (à temps plein)", 
+                    partCustom: { Psychologue: {nom: "BASTARD", prenom: "Nathalie", ...psychologueBastardInfo}, "Coordo ULIS": {nom: "SICARD", prenom: "Valérie"}, "Psychologue dispositif ULIS": {nom: "BASTARD", prenom: "Nathalie", ...psychologueBastardInfo} } 
+                },
+                { 
+                    id: "gb-8", mail: "fjamin@ec44.fr", commune: "Guérande", type: "École", nom: "St Joseph (La Madeleine)", ce: "Mme Flore JAMIN", effectif: 182, spec: "7 cl. (3M/4E)", 
+                    adresse: "7 Rue des Dolmens, La Madeleine, 44350 Guérande", tel: "02 40 61 93 61", 
+                    horaires: "Cours : 8h45 – 12h00 et 13h30 – 16h30<br><strong>Garderie :</strong> 7h30 – 19h00", 
+                    decharge: "", 
+                    partCustom: { RA: {nom: "DERIANO", prenom: "Sandrine"}, Psychologue: {nom: "NOGUES", prenom: "Lise-Marie", ...psychologueNoguesInfo} } 
+                },
+                { 
+                    id: "gb-9", mail: "ndavidtrigodet@ec44.fr", commune: "Herbignac", type: "École", nom: "Sainte Marie - La Mennais", ce: "Mme Nancy DAVID TRIGODET", effectif: 204, spec: "8 cl. (3M/5E)", 
+                    adresse: "17 Rue du Morbihan, 44410 Herbignac", tel: "02 40 88 90 11", 
+                    horaires: "Cours : 8h45 – 12h00 et 13h30 – 16h30<br><strong>Garderie municipale :</strong> 7h15–8h45 et 16h30–18h45", 
+                    decharge: "", 
+                    partCustom: { RA: {nom: "UZUREAU", prenom: "Sylvie"}, Psychologue: {nom: "BASTARD", prenom: "Nathalie", ...psychologueBastardInfo} } 
+                },
+                { 
+                    id: "gb-10", mail: "mjan@ec44.fr", commune: "Piriac-sur-Mer", type: "École", nom: "ND du Rosaire", ce: "Mme Magali JAN", effectif: 33, spec: "2 cl. (1M/1E)", 
+                    adresse: "3 bis Rue du Calvaire, 44420 Piriac-sur-Mer", tel: "02 40 23 51 46", 
+                    horaires: "Matin : 8h45 – 12h00<br>Après-midi : 13h30 – 16h30", 
+                    decharge: "", 
+                    partCustom: { RA: {nom: "DERIANO", prenom: "Sandrine"}, Psychologue: {nom: "BASTARD", prenom: "Nathalie", ...psychologueBastardInfo} } 
+                },
+                { 
+                    id: "gb-11", mail: "ecassou@ec44.fr", commune: "Le Pouliguen", type: "École", nom: "Sainte Marie", ce: "Mme Elodie CASSOU", effectif: 116, spec: "5 cl. (2M/3E)", 
+                    adresse: "20 Rue du Bois, 44510 Le Pouliguen", tel: "02 40 42 31 09", 
+                    horaires: "Matin : 8h45 – 12h00 (accueil dès 8h35)<br>Après-midi : 13h30 – 16h30 (portail à 13h20)<br><strong>Garderie :</strong> 7h30 – 18h30", 
+                    decharge: "Jeudi", 
+                    partCustom: { RA: {nom: "BRILLA", prenom: "Djamila"}, Psychologue: {nom: "BASTARD", prenom: "Nathalie", ...psychologueBastardInfo} } 
+                },
+                { 
+                    id: "gb-12", mail: "asaffre@ec44.fr", commune: "Saint-Lyphard", type: "École", nom: "Sainte Anne", ce: "Mme Anne-Lise SAFFRE", effectif: 183, spec: "8 cl. (3M/5E)", 
+                    adresse: "Maternelle : Rue du 19 Mars 1962 / Élémentaire : 12 Rue de Bretagne, 44410 Saint-Lyphard", tel: "02 40 91 40 80", 
+                    horaires: "Cours : 8h45 – 12h00 et 13h30 – 16h30<br><strong>Garderie (*La Ribambelle*) :</strong> 7h15–8h45 et 16h15–19h00", 
+                    decharge: "", 
+                    partCustom: { RA: {nom: "UZUREAU", prenom: "Sylvie"}, Psychologue: {nom: "BASTARD", prenom: "Nathalie", ...psychologueBastardInfo} } 
+                },
+                { 
+                    id: "gb-13", mail: "fhalgand@ec44.fr", commune: "Saint-Molf", type: "École", nom: "St François", ce: "M. Franck HALGAND", effectif: 89, spec: "4 cl. (2M/2E)", 
+                    adresse: "3 Rue du Pays Blanc, 44350 Saint-Molf (accès par Rue des Épis)", tel: "02 40 62 58 95", 
+                    horaires: "Maternelle : 8h30–11h30 / Élémentaire : 8h30–11h45<br>Après-midi : 13h30 – 16h30 (portails dès 8h20 et 13h20)", 
+                    decharge: "Mardi", 
+                    partCustom: { Psychologue: {nom: "NOGUES", prenom: "Lise-Marie", ...psychologueNoguesInfo} } 
+                },
+                { 
+                    id: "gb-14", mail: "rmuraccini@ec44.fr", commune: "La Turballe", type: "École", nom: "Ste Marie de l'Océan", ce: "Mme Rachel MURACCINI", effectif: 136, spec: "6 cl. (2M/4E)", 
+                    adresse: "4 Rue Alphonse Daudet, 44420 La Turballe", tel: "06 58 79 48 11", 
+                    horaires: "Cours : 8h45 – 12h00 et 13h30 – 16h30<br>Portails : 8h35–8h45, 12h00–12h10, 13h20–13h30, 16h30–16h40<br>Périscolaire : Maison de l'enfance après 16h40", 
+                    decharge: "", 
+                    partCustom: { RA: {nom: "NASSIF", prenom: "Catherine"}, Psychologue: {nom: "NOGUES", prenom: "Lise-Marie", ...psychologueNoguesInfo} } 
+                },
+                { 
+                    id: "gb-15", mail: "flebreton@ec44.fr", commune: "Guérande", type: "Collège", nom: "St Jean-Baptiste", ce: "Mme Françoise LE BRETON", effectif: 775, spec: "ULIS", 
+                    adresse: "16 Boulevard du Midi, 44350 Guérande", tel: "02 40 24 90 55", 
+                    horaires: "Lundi, mardi, jeudi : 8h00 – 17h30<br>Mercredi : 8h00 – 12h00<br>Vendredi : 8h00 – 17h30", 
+                    partCustom: { Psychologue: {nom: "BASTARD", prenom: "Nathalie", ...psychologueBastardInfo}, REI: {nom: "", prenom: ""}, "Référent MIJEC": {nom: "GROS", prenom: "Stéphane", mail: "stephane.gros@es-sag.fr", tel: ""}, "Coordo ULIS": {nom: "DAVID", prenom: "Maud", mail: "maud.david@es-sag.fr", tel: ""}, "Psychologue dispositif ULIS": {nom: "NOGUES", prenom: "Lise Marie", ...psychologueNoguesInfo} } 
+                },
+                { 
+                    id: "gb-16", mail: "mdehez@ec44.fr", commune: "Herbignac", type: "Collège", nom: "St Joseph", ce: "M. Matthieu DEHEZ", effectif: 453, spec: "DPRD", 
+                    adresse: "Place Jean-Marie de la Mennais, 44410 Herbignac", tel: "02 51 76 99 10", 
+                    horaires: "Lundi, Mardi, Jeudi, Vendredi : 8h15 – 17h30<br>Mercredi : 8h15 – 11h30", 
+                    partCustom: { Psychologue: {nom: "BASTARD", prenom: "Nathalie", ...psychologueBastardInfo}, REI: {nom: "", prenom: ""}, DPRD: {nom: "MARCHAND", prenom: "Laetitia", mail: "dprd.nordetrivieres@ec44.fr", tel: ""} } 
+                },
+                { 
+                    id: "gb-17", mail: "rprallong@ec44.fr", commune: "Guérande", type: "Lycée", nom: "La Mennais", ce: "M. Romain PRALLONG", effectif: 538, spec: "LGT", 
+                    adresse: "24 Rue Jean-Baptiste Legeay, 44350 Guérande", tel: "02 40 62 08 20", 
+                    horaires: "Lundi, Mardi, Jeudi : 7h30 – 17h30<br>Mercredi : 7h30 – 12h00<br>Vendredi : 7h30 – 17h00", 
+                    partCustom: { Psychologue: {nom: "BASTARD", prenom: "Nathalie", ...psychologueBastardInfo}, REI: {nom: "", prenom: ""} } 
+                },
+                { 
+                    id: "gb-18", mail: "nbrenier@ec44.fr", commune: "Saint-Molf", type: "Lycée", nom: "LPP Kerguenec", ce: "Mme Nadège BRENIER", effectif: 200, spec: "UEE", 
+                    adresse: "Kerguénec, 44350 Saint-Molf", tel: "02 40 24 91 55", 
+                    horaires: "Lundi, Mardi, Jeudi, Vendredi : 8h30 – 17h30<br>Mercredi : 8h30 – 12h30", 
+                    partCustom: { Psychologue: {nom: "NOGUES", prenom: "Lise-Marie", ...psychologueNoguesInfo}, REI: {nom: "", prenom: ""}, "Coordo UEE": {nom: "", prenom: ""} } 
+                }
+            ],
+            "saint-nazaire-ouest": [
+                { 
+                    id: "sno-1", mail: "amenager@ec44.fr", commune: "Pornichet", type: "École", nom: "Ste Germaine", ce: "Mme Annabel MÉNAGER", effectif: 111, spec: "5 cl. (2M/3E)", 
+                    adresse: "143 Avenue de Saint-Sébastien, 44380 Pornichet", tel: "02 40 61 30 49", 
+                    horaires: "Cours : 8h45 – 12h15 et 14h00 – 16h45 (portail dès 8h35)<br><strong>Garderie :</strong> 7h30–8h30 et 16h45–19h00", 
+                    decharge: "Mardi", 
+                    partCustom: { RA: {nom: "BRILLA", prenom: "Djamila"}, Psychologue: {nom: "BASTARD", prenom: "Nathalie", ...psychologueBastardInfo} } 
+                },
+                { 
+                    id: "sno-2", mail: "clargeron@ec44.fr", commune: "Pornichet", type: "École", nom: "St Jean", ce: "Mme Catherine LARGERON", effectif: 216, spec: "10 cl. (3M/7E)", 
+                    adresse: "15 Avenue Jeanne d'Arc, 44380 Pornichet", tel: "02 40 61 10 76", 
+                    horaires: "Accueil matin : 8h30–8h40<br>Cours : 8h40 – 12h15 et 13h50 – 16h30<br>Portail après-midi : 13h40–13h50", 
+                    decharge: "", 
+                    partCustom: { RA: {nom: "BRILLA", prenom: "Djamila"}, Psychologue: {nom: "BASTARD", prenom: "Nathalie", ...psychologueBastardInfo} } 
+                },
+                { 
+                    id: "sno-3", mail: "sgoubeau@ec44.fr", commune: "St-André-des-Eaux", type: "École", nom: "ND du Sacré-Cœur", ce: "Mme Séverine GOUBEAU", effectif: 236, spec: "9 cl. (3M/6E)", 
+                    adresse: "7-8 Rue des Écoles, 44117 Saint-André-des-Eaux", tel: "02 40 01 23 78", 
+                    horaires: "Maternelle : 8h45–11h45 / 13h35–16h35<br>Élémentaire : 8h30–11h45 / 13h35–16h35<br><strong>Garderie :</strong> 7h30–19h00 (aide aux devoirs 16h45–18h00)", 
+                    decharge: "", 
+                    partCustom: { RA: {nom: "DERIANO", prenom: "Sandrine"}, Psychologue: {nom: "NOGUES", prenom: "Lise-Marie", ...psychologueNoguesInfo} } 
+                },
+                { 
+                    id: "sno-4", mail: "vbihan@ec44.fr", commune: "St-Nazaire", type: "École", nom: "ND de Toutes Aides", ce: "Mme Valérie BIHAN", effectif: 132, spec: "5 cl. (2M/3E)", 
+                    adresse: "2 Rue Jean Racine, 44600 Saint-Nazaire", tel: "02 40 22 41 43", 
+                    horaires: "Cours : 8h45 – 12h00 et 13h45 – 16h45 (accueil dès 8h30)", 
+                    decharge: "", 
+                    partCustom: { RA: {nom: "BECT", prenom: "Christine"}, Psychologue: {nom: "NOGUES", prenom: "Lise-Marie", ...psychologueNoguesInfo} } 
+                },
+                { 
+                    id: "sno-5", mail: "cleonard@ec44.fr", commune: "St-Nazaire", type: "École", nom: "St Jean Ste Bernadette", ce: "Mme Charlotte LEONARD", effectif: 314, spec: "12 cl. (5M/7E)", 
+                    adresse: "253 Rue de Pornichet, 44600 Saint-Nazaire", tel: "02 40 70 27 68", 
+                    horaires: "Cours : 8h45 – 12h00 et 13h45 – 16h45<br>Administration / Vie scolaire : 8h20 – 17h00", 
+                    decharge: "Décharge totale à temps plein", 
+                    partCustom: { RA: {nom: "MAZAN", prenom: "Isabelle"}, Psychologue: {nom: "BASTARD", prenom: "Nathalie", ...psychologueBastardInfo} } 
+                },
+                { 
+                    id: "sno-6", mail: "jmichels@ec44.fr", commune: "St-Nazaire", type: "École", nom: "Ste Marie de l'Immaculée", ce: "Mme Julie MICHELS", effectif: 225, spec: "9 cl. (4M/5E)", 
+                    adresse: "28 Route du Château de Beauregard, 44600 Saint-Nazaire", tel: "02 40 01 99 01", 
+                    horaires: "Cours : 8h45 – 12h00 et 13h30 – 16h30<br><strong>Garderie :</strong> 7h30 – 18h30", 
+                    decharge: "Jeudi", 
+                    partCustom: { RA: {nom: "MAZAN", prenom: "Isabelle"}, Psychologue: {nom: "BASTARD", prenom: "Nathalie", ...psychologueBastardInfo} } 
+                },
+                { 
+                    id: "sno-7", mail: "smoulevrier@ec44.fr", commune: "St-Marc-sur-Mer", type: "École", nom: "St Joseph", ce: "Mme Sophie MOULEVRIER", effectif: 92, spec: "4 cl. (2M/2E)", 
+                    adresse: "7 Rue Marie-Joseph Mollé, 44600 Saint-Nazaire", tel: "02 40 91 74 30", 
+                    horaires: "Cours : 8h45 – 12h00 et 13h30 – 16h30 (portails dès 8h35 et 13h20)<br><strong>Garderie :</strong> 7h45 – 18h30", 
+                    decharge: "Jeudi", 
+                    partCustom: { RA: {nom: "MAZAN", prenom: "Isabelle"}, Psychologue: {nom: "BASTARD", prenom: "Nathalie", ...psychologueBastardInfo} } 
+                },
+                { 
+                    id: "sno-8", mail: "cbourdin@ec44.fr", commune: "Pornichet", type: "Collège", nom: "Le Sacré-Cœur La Salle", ce: "Mme Carine BOURDIN", effectif: 462, spec: "GR 44", 
+                    adresse: "1 bis Avenue de la Plage, 44380 Pornichet", tel: "02 40 61 10 70", 
+                    horaires: "Ouverture : 7h45–17h30 (lu, ma, je, ve) et 7h45–12h30 (me)<br>Cours : 8h15 – 16h25<br>Particularité 6èmes : Pas cours le mercredi matin<br>Étude surveillée : 16h25 – 17h20", 
+                    partCustom: { Psychologue: {nom: "BASTARD", prenom: "Nathalie", ...psychologueBastardInfo}, REI: {nom: "", prenom: ""}, "GR 44": {nom: "", prenom: "Sandy"} } 
+                },
+                { 
+                    id: "sne-11", mail: "fderavinel@ec44.fr", commune: "St-Nazaire", type: "Lycée", nom: "Sainte Anne", ce: "M. Frédéric DE RAVINEL", effectif: 281, spec: "LGT", 
+                    adresse: "250 Boulevard du Docteur René Laënnec, 44600 Saint-Nazaire", tel: "02 40 17 12 00", 
+                    horaires: "Du lundi au vendredi : 8h00 – 17h30<br>Amplitude ajustable selon filières ou restaurants d'application", 
+                    partCustom: { Psychologue: {nom: "BASTARD", prenom: "Nathalie", ...psychologueBastardInfo}, REI: {nom: "", prenom: ""} } 
+                },
+                { 
+                    id: "sne-12", mail: "fderavinel@ec44.fr", commune: "St-Nazaire", type: "Lycée", nom: "Sainte Anne (Pro)", ce: "M. Frédéric DE RAVINEL", effectif: 374, spec: "Pro", 
+                    adresse: "250 Boulevard du Docteur René Laënnec, 44600 Saint-Nazaire", tel: "02 40 17 12 00", 
+                    horaires: "Du lundi au vendredi : 8h00 – 17h30<br>Amplitude ajustable selon filières ou restaurants d'application", 
+                    partCustom: { Psychologue: {nom: "BASTARD", prenom: "Nathalie", ...psychologueBastardInfo}, REI: {nom: "", prenom: ""} } 
+                }
+            ],
+            "saint-nazaire-est": [
+                { 
+                    id: "sne-1", mail: "lmasson@ec44.fr", commune: "La Chapelle-des-Marais", type: "École", nom: "Sainte Marie", ce: "Mme Laurence MASSON", effectif: 221, spec: "9 cl. (3M/6E)", 
+                    adresse: "7 Rue de Tréland, 44410 La Chapelle-des-Marais", tel: "02 40 53 20 37", 
+                    horaires: "Cours : 8h45 – 12h00 et 13h30 – 16h30<br><strong>Garderie :</strong> 7h30–9h00 et 16h30–19h00 (Maison de l'Enfance)", 
+                    decharge: "Lundi et mardi", 
+                    partCustom: { RA: {nom: "UZUREAU", prenom: "Sylvie"}, Psychologue: {nom: "BASTARD", prenom: "Nathalie", ...psychologueBastardInfo} } 
+                },
+                { 
+                    id: "sne-2", mail: "cgautier@ec44.fr", commune: "Montoir-de-Bretagne", type: "École", nom: "Saint Étienne", ce: "Mme Céline GAUTIER", effectif: 173, spec: "7 cl. (3M/4E)", 
+                    adresse: "21 Rue du Docteur Roux, 44550 Montoir-de-Bretagne", tel: "02 40 88 53 68", 
+                    horaires: "Matin : 8h30 – 12h00<br>Après-midi : 13h45 – 16h30", 
+                    decharge: "", 
+                    partCustom: { RA: {nom: "MAZAN", prenom: "Isabelle"}, Psychologue: {nom: "BASTARD", prenom: "Nathalie", ...psychologueBastardInfo} } 
+                },
+                { 
+                    id: "sne-3", mail: "srolland@ec44.fr", commune: "St-Joachim", type: "École", nom: "Sainte Anne", ce: "Mme Sandrine ROLLAND", effectif: 115, spec: "5 cl. (2M/3E)", 
+                    adresse: "150 Rue Joliot Curie, 44720 Saint-Joachim", tel: "02 40 88 57 60", 
+                    horaires: "Horaires de classe : 8h40 – 12h00 et 13h30 – 16h25<br><strong>Garderie :</strong> 7h00–8h30 et 16h35–18h30<br>Étude surveillée : CP au CM2 jusqu'à 17h30 (sauf ve)", 
+                    decharge: "", 
+                    partCustom: { RA: {nom: "MELU", prenom: "Aurélie"}, Psychologue: {nom: "BASTARD", prenom: "Nathalie", ...psychologueBastardInfo} } 
+                },
+                { 
+                    id: "sne-4", mail: "cchaprondesmoulins@ec44.fr", commune: "St-Nazaire", type: "École", nom: "Saint Gohard (Site Ste-Thérèse)", ce: "Mme Christelle CHAPRON DESMOULINS", effectif: 200, spec: "8 cl. (3M/5E)", 
+                    adresse: "27 Rue Jean Jaurès, 44600 Saint-Nazaire", tel: "02 40 22 28 23", 
+                    horaires: "Cours : 8h30 – 11h45 et 13h15 – 16h15<br><strong>Garderie :</strong> 7h30–8h30 et 16h15–18h30", 
+                    decharge: "", 
+                    partCustom: { RA: {nom: "BECT", prenom: "Christine"}, Psychologue: {nom: "NOGUES", prenom: "Lise-Marie", ...psychologueNoguesInfo} } 
+                },
+                { 
+                    id: "sne-5", mail: "mberasaluze@ec44.fr", commune: "St-Nazaire", type: "École", nom: "St Joseph / Notre Dame", ce: "M. Manuel BERASALUZE", effectif: 285, spec: "11 cl. (4M/7E) + ULIS", 
+                    adresse: "1 Rue du Lavoir, 44600 Saint-Nazaire", tel: "02 40 70 17 47", 
+                    horaires: "Cours : 8h45 – 12h00 et 13h45 – 16h45<br><strong>Garderie :</strong> 7h30 – 18h30", 
+                    decharge: "Décharge totale à temps plein", 
+                    partCustom: { RA: {nom: "BECT", prenom: "Christine"}, Psychologue: {nom: "NOGUES", prenom: "Lise-Marie", ...psychologueNoguesInfo}, "Coordo ULIS": {nom: "MONNERAYE", prenom: "Laurence"}, "Psychologue dispositif ULIS": {nom: "NOGUES", prenom: "Lise Marie", ...psychologueNoguesInfo} } 
+                },
+                { 
+                    id: "sne-6", mail: "lmbothorel@ec44.fr", commune: "St-Nazaire", type: "École", nom: "St Joseph de Méan", ce: "M. Louis Marie BOTHOREL", effectif: 97, spec: "4 cl. (2M/2E)", 
+                    adresse: "36 Rue des Frères Monvoisin, 44600 Saint-Nazaire", tel: "02 40 90 21 43", 
+                    horaires: "Cours : 8h30 – 11h45 et 13h15 – 16h30<br><strong>Garderie :</strong> 7h30 – 18h30", 
+                    decharge: "", 
+                    partCustom: { RA: {nom: "BECT", prenom: "Christine"}, Psychologue: {nom: "NOGUES", prenom: "Lise-Marie", ...psychologueNoguesInfo} } 
+                },
+                { 
+                    id: "sne-7", mail: "rdesgree@ec44.fr", commune: "St-Nazaire", type: "Collège", nom: "Ste Thérèse", ce: "M. Richard DESGRÉE", effectif: 542, spec: "SEGPA", 
+                    adresse: "80 Rue d'Anjou, 44600 Saint-Nazaire", tel: "02 40 22 52 87", 
+                    horaires: "Lu, Ma, Je : 7h45–17h15 (services jusqu'à 18h00)<br>Vendredi : 7h45–17h00<br>Mercredi : 7h45–11h45 (permanence jusqu'à 17h00)", 
+                    partCustom: { Psychologue: {nom: "BASTARD", prenom: "Nathalie", ...psychologueBastardInfo}, REI: {nom: "", prenom: ""}, DMA: {nom: "BORNE-MORIN", prenom: "Jeanne Christine"}, "Directeur adjoint SEGPA": {nom: "TOUGERON", prenom: "Frédéric"} } 
+                },
+                { 
+                    id: "sne-8", mail: "cberthou@ec44.fr", commune: "St-Nazaire", type: "Collège", nom: "St Louis", ce: "M. Cyrille BERTHOU", effectif: 780, spec: "ULIS", 
+                    adresse: "10 Boulevard Albert 1er, 44600 Saint-Nazaire", tel: "02 51 76 60 20", 
+                    horaires: "Secrétariat : Lu-Ve 7h45–12h30 et 13h00–17h30/18h00<br>Cours Collège : 8h30–16h45/17h40 (me: 8h30–12h25)<br>Étude du soir : 15h50 – 17h40 (aide aux devoirs)", 
+                    partCustom: { Psychologue: {nom: "BASTARD", prenom: "Nathalie", ...psychologueBastardInfo}, REI: {nom: "", prenom: ""}, "Coordo ULIS": {nom: "TOSATTO", prenom: "Julie"}, "Psychologue dispositif ULIS": {nom: "NOGUES", prenom: "Lise Marie", ...psychologueNoguesInfo} } 
+                },
+                { 
+                    id: "sne-9", mail: "rdesgree@ec44.fr", commune: "St-Nazaire", type: "Lycée", nom: "Ste Thérèse (Pro)", ce: "M. Richard DESGRÉE", effectif: 385, spec: "Pro / DMA", 
+                    adresse: "80 Rue d'Anjou, 44600 Saint-Nazaire", tel: "02 40 22 52 87", 
+                    horaires: "Lu, Ma, Je : 7h45–17h15 (services jusqu'à 18h00)<br>Vendredi : 7h45–17h00<br>Mercredi : 7h45–11h45<br>Cours Pro : 8h00–12h00 et 13h15–17h10", 
+                    partCustom: { Psychologue: {nom: "BASTARD", prenom: "Nathalie", ...psychologueBastardInfo}, REI: {nom: "", prenom: ""}, "Pilote PIAL": {nom: "DESGRÉE", prenom: "Richard"} } 
+                },
+                { 
+                    id: "sne-10", mail: "cberthou@ec44.fr", commune: "St-Nazaire", type: "Lycée", nom: "Saint Louis", ce: "M. Cyrille BERTHOU", effectif: 470, spec: "LGT", 
+                    adresse: "10 Boulevard Albert 1er, 44600 Saint-Nazaire", tel: "02 51 76 60 20", 
+                    horaires: "Secrétariat : Lu-Ve 7h45–12h30 et 13h00–17h30/18h00<br>Cours Lycée : 8h00–17h40 (me: 8h00–12h25)<br>Étude du soir : 15h50 – 17h40 (aide aux devoirs)", 
+                    partCustom: { Psychologue: {nom: "BASTARD", prenom: "Nathalie", ...psychologueBastardInfo}, REI: {nom: "", prenom: ""} } 
+                },
+                { 
+                    id: "sne-13", mail: "rdesgree@ec44.fr", commune: "St-Nazaire", type: "Lycée", nom: "Notre Dame d'Espérance", ce: "M. Richard DESGRÉE", effectif: 770, spec: "LGT", 
+                    adresse: "15 Rue du Bois Savary, 44600 Saint-Nazaire", tel: "02 40 01 81 82", 
+                    horaires: "Bureaux : Lu-Je 8h00–12h30 / 13h00–17h30 (Vendredi jusqu'à 17h00)<br>Cours : 8h05 – 12h00 et 13h30 – 17h25 (sauf mercredi après-midi libre)", 
+                    partCustom: { Psychologue: {nom: "NOGUES", prenom: "Lise-Marie", ...psychologueNoguesInfo}, REI: {nom: "", prenom: ""} } 
+                }
+            ]
+        };
+
+        const baseRolesEcole = ["RA", "Psychologue", "Chargé de mission", "ERSH", "Coordo PIAL", "Pilote PIAL"];
+        const baseRolesCollegeLycee = ["Psychologue", "Chargé de mission", "ERSH", "REI", "Référent MIJEC", "Accompagnatrice MIJEC", "Coordo PIAL", "Pilote PIAL"];
+
+        let activeSector = "guerande-baule";
+        let currentFilter = 'all';
+        let currentFilterType = '';
+        let selectedCommune = 'all';
+        let currentModalId = null;
+
+        const container = document.getElementById('gridContainer');
+        const searchInput = document.getElementById('searchInput');
+        const filterButtons = document.querySelectorAll('.btn-filter');
+        const communeSelect = document.getElementById('communeSelect');
+
+        function switchSector(sectorId) {
+            activeSector = sectorId;
+            document.getElementById('tab-gb').classList.toggle('active', sectorId === 'guerande-baule');
+            document.getElementById('tab-sno').classList.toggle('active', sectorId === 'saint-nazaire-ouest');
+            document.getElementById('tab-sne').classList.toggle('active', sectorId === 'saint-nazaire-est');
+            selectedCommune = 'all';
+            populateCommunes(); updateStats(); renderCards();
+        }
+
+        function populateCommunes() {
+            communeSelect.innerHTML = '<option value="all">📍 Toutes les communes</option>';
+            let communes = [...new Set(dataset[activeSector].map(item => item.commune))].sort();
+            communes.forEach(c => {
+                communeSelect.insertAdjacentHTML('beforeend', `<option value="${c}">${c}</option>`);
+            });
+            communeSelect.value = selectedCommune;
+        }
+
+        function getDossiersCount(id) {
+            let val = parseInt(getCloud(`pas_${id}_dossiers`));
+            return isNaN(val) ? 0 : val;
+        }
+
+        function getUrgencesCount(id) {
+            let val = parseInt(getCloud(`pas_${id}_urgences`));
+            return isNaN(val) ? 0 : val;
+        }
+
+        function updateStats() {
+            let elGb = dataset["guerande-baule"].reduce((acc, i) => acc + i.effectif, 0);
+            let elSno = dataset["saint-nazaire-ouest"].reduce((acc, i) => acc + i.effectif, 0);
+            let elSne = dataset["saint-nazaire-est"].reduce((acc, i) => acc + i.effectif, 0);
+
+            document.getElementById('sub-gb').innerText = `${dataset["guerande-baule"].length} Établissements | ${elGb.toLocaleString()} Élèves`;
+            document.getElementById('sub-sno').innerText = `${dataset["saint-nazaire-ouest"].length} Établissements | ${elSno.toLocaleString()} Élèves`;
+            document.getElementById('sub-sne').innerText = `${dataset["saint-nazaire-est"].length} Établissements | ${elSne.toLocaleString()} Élèves`;
+
+            let saisinesGb = 0;
+            dataset["guerande-baule"].forEach(item => { saisinesGb += getDossiersCount(item.id); });
+            let saisinesSno = 0;
+            dataset["saint-nazaire-ouest"].forEach(item => { saisinesSno += getDossiersCount(item.id); });
+            let saisinesSne = 0;
+            dataset["saint-nazaire-est"].forEach(item => { saisinesSne += getDossiersCount(item.id); });
+
+            document.getElementById('badge-gb').innerText = saisinesGb;
+            document.getElementById('badge-sno').innerText = saisinesSno;
+            document.getElementById('badge-sne').innerText = saisinesSne;
+
+            const list = dataset[activeSector];
+            document.getElementById('stat-total').innerText = list.length;
+            document.getElementById('stat-ecoles').innerText = list.filter(i => i.type === 'École').length;
+            document.getElementById('stat-colleges').innerText = list.filter(i => i.type === 'Collège').length;
+            document.getElementById('stat-lycees').innerText = list.filter(i => i.type === 'Lycée').length;
+            
+            let totalSaisinesGlobal = saisinesGb + saisinesSno + saisinesSne;
+            document.getElementById('stat-saisines').innerText = totalSaisinesGlobal;
+        }
+
+        function openPartenairesModal(id, nom, commune, type, sectorKey) {
+            currentModalId = id;
+            document.getElementById('partenairesModalTitle').innerText = nom;
+            document.getElementById('partenairesModalSubtitle').innerText = commune + " — Partenaires DDEC";
+            
+            const targetSector = sectorKey || activeSector;
+            const itemData = dataset[targetSector].find(i => i.id === id);
+            
+            let baseRoles = (type === 'École') ? [...baseRolesEcole] : [...baseRolesCollegeLycee];
+            let autoDefaults = getPartDefaults(type, targetSector, id);
+            let customMap = itemData ? (itemData.partCustom || {}) : {};
+
+            let allRoles = [...baseRoles];
+            Object.keys(autoDefaults).forEach(r => { if (!allRoles.includes(r)) allRoles.push(r); });
+            Object.keys(customMap).forEach(r => { if (!allRoles.includes(r)) allRoles.push(r); });
+
+            const bodyContainer = document.getElementById('partenairesModalBody');
+            
+            let htmlTable = `
+                <table class="partners-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 20%;">Fonction</th>
+                            <th style="width: 17%;">Nom</th>
+                            <th style="width: 17%;">Prénom</th>
+                            <th style="width: 32%;">Email</th>
+                            <th style="width: 14%;">Tél</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            allRoles.forEach((role, idx) => {
+                let refObj = autoDefaults[role] || customMap[role] || {};
+                let defNom = refObj.nom || "";
+                let defPrenom = refObj.prenom || "";
+                let defMail = refObj.mail || "";
+                let defTel = refObj.tel || "";
+
+                let savedNom = getCloud(`pas_${id}_part_${idx}_nom`);
+                if (!savedNom) savedNom = defNom;
+
+                let savedPrenom = getCloud(`pas_${id}_part_${idx}_prenom`);
+                if (!savedPrenom) savedPrenom = defPrenom;
+
+                let savedMail = getCloud(`pas_${id}_part_${idx}_mail`);
+                if (!savedMail) savedMail = defMail;
+
+                let savedTel = getCloud(`pas_${id}_part_${idx}_tel`);
+                if (!savedTel) savedTel = defTel;
+
+                htmlTable += `
+                    <tr>
+                        <td><strong>${role}</strong></td>
+                        <td><input type="text" placeholder="Nom..." value="${savedNom}" oninput="savePartnerField('${id}', ${idx}, 'nom', this.value)"></td>
+                        <td><input type="text" placeholder="Prénom..." value="${savedPrenom}" oninput="savePartnerField('${id}', ${idx}, 'prenom', this.value)"></td>
+                        <td>
+                            <div style="display: flex; gap: 6px; align-items: center;">
+                                <input type="text" placeholder="Email..." value="${savedMail}" id="mail-${id}-${idx}" oninput="savePartnerField('${id}', ${idx}, 'mail', this.value)">
+                                <button class="btn-copy-partenaire" onclick="copyPartnerMail('${id}', ${idx}, this)">✉️</button>
+                            </div>
+                        </td>
+                        <td><input type="text" placeholder="Tél..." value="${savedTel}" oninput="savePartnerField('${id}', ${idx}, 'tel', this.value)"></td>
+                    </tr>
+                `;
+            });
+
+            htmlTable += `</tbody></table>`;
+            bodyContainer.innerHTML = htmlTable;
+            document.getElementById('partenairesModal').style.display = 'flex';
+        }
+
+        function savePartnerField(id, idx, field, value) {
+            saveCloudData(`pas_${id}_part_${idx}_${field}`, value);
+        }
+
+        function copyPartnerMail(id, idx, btn) {
+            let inputMail = document.getElementById(`mail-${id}-${idx}`);
+            if (inputMail && inputMail.value.trim() !== "") {
+                navigator.clipboard.writeText(inputMail.value.trim()).then(() => {
+                    let oldText = btn.innerText;
+                    btn.innerText = "✅";
+                    setTimeout(() => btn.innerText = oldText, 1500);
+                });
+            }
+        }
+
+        function closePartenairesModal() {
+            document.getElementById('partenairesModal').style.display = 'none';
+            currentModalId = null;
+        }
+
+        function updateCounter(id, field, value) {
+            let num = parseInt(value);
+            if (isNaN(num) || num < 0) num = 0;
+            saveCloudData(`pas_${id}_${field}`, num);
+            updateStats();
+            
+            let badge = document.getElementById(`badge-count-${id}`);
+            let total = getDossiersCount(id);
+            let urg = getUrgencesCount(id);
+            
+            if (total > 0) {
+                badge.innerText = urg > 0 ? `${total} [${urg}]` : `${total}`;
+                badge.style.display = 'inline-block';
+            } else {
+                badge.style.display = 'none';
+            }
+        }
+
+        function filterCommune() {
+            selectedCommune = communeSelect.value;
+            renderCards();
+        }
+
+        function copyToClipboard(text, btn) {
+            navigator.clipboard.writeText(text).then(() => {
+                let oldText = btn.innerText;
+                btn.innerText = "✅ Copié !";
+                setTimeout(() => btn.innerText = oldText, 1500);
+            });
+        }
+
+        function toggleCardFlip(id) {
+            const cardEl = document.getElementById(`card-elem-${id}`);
+            if (cardEl) {
+                cardEl.classList.toggle('is-flipped');
+            }
+        }
+
+        function renderCards() {
+            container.innerHTML = '';
+            const query = searchInput.value.toLowerCase().trim();
+            
+            let listToDisplay = [];
+            if (currentFilter === 'urgences') {
+                Object.keys(dataset).forEach(sectorKey => {
+                    dataset[sectorKey].forEach(item => {
+                        if (getUrgencesCount(item.id) > 0) {
+                            listToDisplay.push({ ...item, sectorKey: sectorKey });
+                        }
+                    });
+                });
+            } else {
+                listToDisplay = dataset[activeSector].map(item => ({ ...item, sectorKey: activeSector }));
+            }
+
+            const filtered = listToDisplay.filter(item => {
+                const matchesSearch = item.nom.toLowerCase().includes(query) || item.ce.toLowerCase().includes(query);
+                const matchesCommune = selectedCommune === 'all' || item.commune === selectedCommune;
+                
+                let matchesFilter = false;
+                if (currentFilter === 'all') matchesFilter = true;
+                else if (currentFilter === 'type' && item.type === currentFilterType) matchesFilter = true;
+                else if (currentFilter === 'urgences' && getUrgencesCount(item.id) > 0) matchesFilter = true;
+
+                return matchesSearch && matchesCommune && matchesFilter;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="no-result">Aucun établissement ne correspond à ces critères.</div>`; return;
+            }
+
+            filtered.forEach(item => {
+                const cardClass = item.type === 'École' ? 'ecole' : item.type === 'Collège' ? 'college' : 'lycee';
+                
+                let dossiersVal = getDossiersCount(item.id);
+                let urgencesVal = getUrgencesCount(item.id);
+
+                let badgeText = dossiersVal > 0 ? (urgencesVal > 0 ? `${dossiersVal} [${urgencesVal}]` : `${dossiersVal}`) : "";
+                let displayBadge = badgeText !== "" ? 'inline-block' : 'none';
+
+                let extraRowHtml = '';
+                if (item.spec && item.spec.trim() !== '') {
+                    extraRowHtml = `<div class="info-row" style="margin-top: 6px;">${item.spec}</div>`;
+                }
+
+                // Génération lien Google Maps encodé
+                let mapsQuery = encodeURIComponent(`${item.nom}, ${item.adresse || item.commune}`);
+                let mapsUrl = `https://www.google.com/maps/search/?api=1&query=${mapsQuery}`;
+
+                // Bloc décharge (uniquement si École)
+                let dechargeHtml = '';
+                if (item.type === 'École') {
+                    let dechargeText = (item.decharge && item.decharge.trim() !== '') ? item.decharge : 'Non renseigné';
+                    dechargeHtml = `
+                        <div class="verso-row">
+                            <span class="verso-label">Décharge :</span>
+                            <span class="verso-value"><strong>${dechargeText}</strong></span>
+                        </div>
+                    `;
+                }
+
+                // Gestion spécifique pour basculer le mail en dessous (Herbignac gb-9, St-Marc sno-7, et Saint-Nazaire Est sne-4, sne-6)
+                let ceBlockHtml = '';
+                if (['gb-9', 'sno-7', 'sne-4', 'sne-6'].includes(item.id)) {
+                    ceBlockHtml = `
+                        <div style="margin-bottom: 6px;">
+                            <div style="font-size: 14px; margin-bottom: 4px;">
+                                <span style="color: var(--text-muted); font-weight: 500; display: inline-block; width: 35px;">CE :</span>
+                                <strong>${item.ce}</strong>
+                            </div>
+                            <div>
+                                <button class="btn-mail" onclick="copyToClipboard('${item.mail}', this)" title="Copier l'e-mail">✉️ ${item.mail}</button>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    ceBlockHtml = `
+                        <div class="info-row">
+                            <div class="info-left">
+                                <span class="info-label">CE :</span>
+                                <strong>${item.ce}</strong>
+                            </div>
+                            <button class="btn-mail" onclick="copyToClipboard('${item.mail}', this)" title="Copier l'e-mail">✉️ ${item.mail}</button>
+                        </div>
+                    `;
+                }
+
+                const html = `
+                    <div class="card-scene ${cardClass}">
+                        <div class="card-element" id="card-elem-${item.id}">
+                            <!-- RECTO -->
+                            <div class="card-face recto">
+                                <div>
+                                    <button class="btn-flip-info" onclick="toggleCardFlip('${item.id}')" title="Informations pratiques">i</button>
+                                    <span class="badge-type">${item.type}</span>
+                                    <span class="badge-saisines" id="badge-count-${item.id}" style="display: ${displayBadge};">${badgeText}</span>
+                                    <div class="establishment-name">${item.nom}</div>
+                                    <div class="commune">📍 ${item.commune}</div>
+                                    <div style="margin-top:10px;">
+                                        ${ceBlockHtml}
+                                        ${extraRowHtml}
+                                    </div>
+                                </div>
+                                <div class="middle-section">
+                                    <div class="effectif-row">
+                                        <span>Effectif :</span>
+                                        <strong>${item.effectif} élèves</strong>
+                                    </div>
+                                    <div class="counters-row">
+                                        <div class="counter-group">
+                                            <span>📂 Dossiers :</span>
+                                            <input type="number" min="0" value="${dossiersVal}" oninput="updateCounter('${item.id}', 'dossiers', this.value)">
+                                        </div>
+                                        <div class="counter-group">
+                                            <span>🚨 Urgences :</span>
+                                            <input type="number" min="0" value="${urgencesVal}" oninput="updateCounter('${item.id}', 'urgences', this.value)">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-actions">
+                                    <button class="btn-partenaires-card" onclick="openPartenairesModal('${item.id}', '${item.nom.replace(/'/g, "\\'")}', '${item.commune}', '${item.type}', '${item.sectorKey}')">
+                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1e3c72" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                                        Partenaires DDEC
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- VERSO -->
+                            <div class="card-face verso">
+                                <div>
+                                    <div class="verso-title">
+                                        <span>Infos Pratiques</span>
+                                        <button class="btn-flip-info" onclick="toggleCardFlip('${item.id}')" title="Retourner la carte">↩</button>
+                                    </div>
+                                    <div class="establishment-name" style="font-size: 15px; margin-bottom: 10px;">${item.nom}</div>
+                                    <div class="verso-content">
+                                        <div class="verso-row">
+                                            <span class="verso-label">Adresse :</span>
+                                            <span class="verso-value"><a href="${mapsUrl}" target="_blank" title="Ouvrir dans Google Maps">📍 ${item.adresse || item.commune} ↗</a></span>
+                                        </div>
+                                        <div class="verso-row">
+                                            <span class="verso-label">Téléphone :</span>
+                                            <span class="verso-value">📞 ${item.tel || "Non renseigné"}</span>
+                                        </div>
+                                        <div class="verso-row">
+                                            <span class="verso-label">Horaires :</span>
+                                            <span class="verso-value">🕒 ${item.horaires || "Non renseignés"}</span>
+                                        </div>
+                                        ${dechargeHtml}
+                                    </div>
+                                </div>
+                                <div style="font-size: 11px; color: var(--text-muted); text-align: center; border-top: 1px solid #edf2f7; padding-top: 6px; margin-top: 8px;">
+                                    Réseau DDEC — Fiche informative
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.insertAdjacentHTML('beforeend', html);
+            });
+        }
+
+        searchInput.addEventListener('input', renderCards);
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                currentFilter = button.getAttribute('data-filter');
+                if (currentFilter === 'type') currentFilterType = button.getAttribute('data-type');
+                renderCards();
+            });
+        });
+
+        loadCloudData();
+    </script>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            if (!isCoordinator) {
+                document.querySelectorAll('input, textarea').forEach(el => {
+                    el.readOnly = true;
+                    el.disabled = true;
+                    el.style.backgroundColor = "#f1f2f6";
+                    el.style.cursor = "not-allowed";
+                });
+            }
+        });
+    </script>
+</body>
+</html>
